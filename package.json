@@ -1,0 +1,9 @@
+{
+  "name": "ddos-traffic-simulator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Safe, local-first educational DDoS traffic simulator dashboard",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

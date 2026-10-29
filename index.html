@@ -1,31 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Traffic Lab — Live Traffic Flow</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#061426">
+  <title>Live DDoS Traffic Simulator | Cybersecurity Lab</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body data-mode="ddos">
-  <main class="dashboard">
-    <nav class="mode-nav"><a href="index.html">Overview</a><a href="dos.html">DoS attack</a><a class="active" href="ddos.html">DDoS attack</a></nav>
-    <section class="flow-card" aria-label="Live traffic flow simulation">
-      <header class="flow-header"><h1>Live traffic flow</h1><div class="status"><span class="status-light"></span><span id="statusText">Over capacity — requests dropping</span></div></header>
-      <svg id="network" viewBox="0 0 920 385" role="img" aria-label="Animated attack and legitimate traffic flowing through a request queue to a web server">
-        <defs><filter id="glowBlue"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="glowGreen"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><marker id="arrowGray" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#9aa8bc"/></marker></defs>
-        <g id="routes"><path class="route attack-route" d="M120 70 L415 168"/><path class="route attack-route" d="M120 125 L415 168"/><path class="route attack-route" d="M120 180 L415 168"/><path class="route legit-route" d="M120 235 L415 168"/><path class="route legit-route" d="M120 290 L415 168"/><path class="route server-route" d="M555 168 H665"/><path class="server-route" d="M725 168 H850" marker-end="url(#arrowGray)"/></g>
-        <text class="svg-title attack-title" x="62" y="35">Attack clients <tspan id="attackSvg">90</tspan>/s</text><text class="svg-title legit-title" x="62" y="336">Legitimate <tspan id="legitSvg">40</tspan>/s</text>
-        <g id="packets"></g><g id="queueCells"></g><g id="servedPackets"></g>
-        <g class="queue-group"><text class="queue-label" x="462" y="97" text-anchor="middle">Request queue</text><text class="queue-capacity" x="462" y="116" text-anchor="middle"><tspan id="queueValue">80</tspan> / 80</text><rect class="queue-box" x="402" y="126" width="120" height="144" rx="14"/></g>
-        <path class="reject-line" d="M395 168 V305" marker-end="url(#rejectArrow)"/><defs><marker id="rejectArrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#aa7aff"/></marker></defs><text class="reject-label" x="362" y="329">Rejected</text><text class="reject-label" x="362" y="347"><tspan id="rejectedSvg">10</tspan>/s</text>
-        <g class="server-group"><rect class="server-box" x="665" y="126" width="60" height="84" rx="8"/><rect class="server-screen" x="674" y="136" width="42" height="18" rx="3"/><rect class="server-screen" x="674" y="162" width="42" height="18" rx="3"/><rect class="server-screen" x="674" y="188" width="42" height="14" rx="3"/><circle class="server-led" cx="705" cy="145" r="3"/><circle class="server-led" cx="705" cy="171" r="3"/><circle class="server-led" cx="705" cy="195" r="3"/><text class="server-name" x="695" y="236" text-anchor="middle">Web server</text><text class="server-capacity" x="695" y="254" text-anchor="middle">Capacity <tspan id="capacitySvg">120</tspan>/s</text></g><text class="served-label" x="785" y="130">Served <tspan id="servedSvg">120</tspan>/s</text>
-      </svg>
-      <p class="caption">Queue full — excess requests are dropped</p><p class="subcaption">Illustrative model • values are simulated</p>
-      <section class="metrics"><article><span>Incoming requests</span><strong id="incomingValue">130</strong><small>req/s</small></article><article><span>Requests served</span><strong class="green" id="servedValue">120</strong><small>req/s</small></article><article><span>Requests dropped</span><strong class="red" id="droppedValue">10</strong><small>req/s</small></article><article><span>Queue utilization</span><strong class="amber" id="utilizationValue">108</strong><small>%</small></article></section>
-      <div class="legend"><span><i class="blue-dot"></i>Simulated attack traffic</span><span><i class="green-dot"></i>Legitimate users</span><span><i class="purple-dot"></i>Rejected requests</span></div>
-    </section>
-    <section class="controls"><label for="attackRate">Attack rate <b><span id="rateValue">90</span> req/s</b></label><input id="attackRate" type="range" min="0" max="180" value="90"><button id="toggleButton" type="button">Pause</button><button id="resetButton" type="button">Reset</button></section>
-  </main>
-  <script src="script.js" defer></script>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Traffic Lab home">
+        <span class="brand-mark">⬡</span><span>TRAFFIC<span class="accent">LAB</span></span>
+      </a>
+      <div class="top-meta"><span class="live-dot"></span><span>EDUCATIONAL SIMULATION</span><span class="divider-dot">•</span><span id="clock">--:--:--</span></div>
+    </header>
+
+    <nav class="tabs" aria-label="Dashboard sections">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="dos">DoS attack</button>
+      <button class="tab" data-tab="ddos">DDoS attack</button>
+      <span class="tab-note">No real packets are sent</span>
+    </nav>
+
+    <main>
+      <section class="hero panel">
+        <div class="panel-head">
+          <div><p class="eyebrow">CYBER DEFENSE LAB</p><h1 id="pageTitle">Live DDoS Traffic Simulator</h1><p class="subtitle" id="pageSubtitle">Explore how traffic volume, queues, and server capacity interact.</p></div>
+          <div class="status-pill" id="statusPill"><span class="status-dot"></span><span id="statusText">Capacity pressure</span></div>
+        </div>
+
+        <div class="scene-wrap">
+          <canvas id="trafficCanvas" aria-label="Animated simulated traffic moving from clients through a request queue to a web server"></canvas>
+          <div class="scene-label label-attack"><span class="label-icon blue">↗</span><div><strong>Simulated attack traffic</strong><b id="attackLabel">90 req/s</b></div></div>
+          <div class="scene-label label-legit"><span class="label-icon green">✓</span><div><strong>Legitimate users</strong><b id="legitLabel">40 req/s</b></div></div>
+          <div class="queue-object" aria-label="Simulated request queue">
+            <div class="queue-top"><span class="mini-led"></span><span>REQUEST QUEUE</span><strong id="queueLabel">80 / 80</strong></div>
+            <div class="queue-grid" id="queueGrid"></div>
+            <div class="queue-foot"><span class="tiny-dot"></span><span id="queueFoot">Queue full · excess requests are dropped</span></div>
+          </div>
+          <div class="reject-line"><span></span><b id="rejectLabel">Rejected 10/s</b></div>
+          <div class="server-object">
+            <div class="server-glow"></div>
+            <div class="server-rack"><div class="rack-top"></div><div class="server-unit"><i></i><i></i><i></i></div><div class="server-unit"><i></i><i></i><i></i></div><div class="server-unit"><i></i><i></i><i></i></div><div class="server-unit"><i></i><i></i><i></i></div><div class="server-unit"><i></i><i></i><i></i></div><div class="rack-base"></div></div>
+            <div class="server-name">WEB SERVER</div><div class="server-cap">CAPACITY <span id="capacityLabel">120</span>/s</div>
+          </div>
+          <div class="flow-out"><span class="flow-caption">SERVED <b id="servedLabel">120/s</b></span><div class="out-line"></div><span class="out-arrow">➜</span></div>
+          <div class="client-stack client-attack"><div class="client-back"></div><div class="laptop"><div class="laptop-screen"><span>⌁</span><small>ATTACK SIMULATED</small></div><div class="laptop-base"></div></div><span class="client-tag">CLIENT GROUP A</span></div>
+          <div class="client-stack client-legit"><div class="client-back"></div><div class="laptop"><div class="laptop-screen user-screen"><span>●</span><small>WEB VISITOR</small></div><div class="laptop-base"></div></div><span class="client-tag">REAL USERS (MODEL)</span></div>
+          <div class="scene-footnote"><span class="pulse-ring"></span>Traffic is generated in-browser for learning only</div>
+        </div>
+
+        <div class="metrics">
+          <article class="metric-card"><div class="metric-top"><span class="metric-icon icon-blue">⇣</span><span>Incoming requests</span></div><div class="metric-value blue-text" id="incomingMetric">130 <small>req/s</small></div><div class="metric-bottom"><span>Attack + legitimate</span><span class="spark spark-blue">▁▃▂▅▄▇▅█</span></div></article>
+          <article class="metric-card"><div class="metric-top"><span class="metric-icon icon-green">✓</span><span>Requests served</span></div><div class="metric-value green-text" id="servedMetric">120 <small>req/s</small></div><div class="metric-bottom"><span>Server throughput</span><span class="spark spark-green">▁▂▄▃▆▄▇█</span></div></article>
+          <article class="metric-card"><div class="metric-top"><span class="metric-icon icon-purple">×</span><span>Requests dropped</span></div><div class="metric-value purple-text" id="droppedMetric">10 <small>req/s</small></div><div class="metric-bottom"><span>Excess in this model</span><span class="spark spark-purple">▁▂▁▄▃▆▄█</span></div></article>
+          <article class="metric-card"><div class="metric-top"><span class="metric-icon icon-orange">◌</span><span>Queue utilization</span></div><div class="metric-value orange-text" id="utilMetric">108<small>%</small></div><div class="util-bar"><span id="utilBar"></span></div><div class="metric-bottom"><span>Illustrative pressure score</span><span id="utilState">High</span></div></article>
+        </div>
+      </section>
+
+      <section class="controls panel">
+        <div class="control-heading"><div><p class="eyebrow">SIMULATION CONTROLS</p><h2>Adjust the traffic model</h2></div><span class="safe-chip">● SAFE MODE</span></div>
+        <div class="slider-row"><label for="attackRate">Attack rate <strong id="attackValue">90 req/s</strong></label><input id="attackRate" type="range" min="0" max="240" value="90" step="5"><span class="slider-minmax"><span>0 req/s</span><span>240 req/s</span></span></div>
+        <div class="slider-row"><label for="legitRate">Legitimate users <strong id="legitValue">40 req/s</strong></label><input id="legitRate" type="range" min="0" max="120" value="40" step="5"><span class="slider-minmax"><span>0 req/s</span><span>120 req/s</span></span></div>
+        <div class="slider-row"><label for="serverCapacity">Server capacity <strong id="capacityValue">120 req/s</strong></label><input id="serverCapacity" type="range" min="40" max="200" value="120" step="10"><span class="slider-minmax"><span>40 req/s</span><span>200 req/s</span></span></div>
+        <div class="control-actions"><div class="mode-info"><span class="keyboard-hint">TIP</span><span id="learningTip">Compare incoming traffic with server capacity to see why overload causes drops.</span></div><div class="buttons"><button class="btn btn-primary" id="pauseBtn"><span id="pauseIcon">Ⅱ</span><span id="pauseText">Pause</span></button><button class="btn btn-secondary" id="resetBtn">↻ Reset</button></div></div>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel lesson-card"><p class="eyebrow">LEARNING NOTES</p><h2 id="lessonTitle">What are you seeing?</h2><p id="lessonText">A DDoS attack model represents many distributed sources sending more requests than a service can handle. In this safe simulation, moving dots are visual effects; no requests leave your browser.</p><div class="legend"><span><i class="legend-dot blue-bg"></i>Simulated attack</span><span><i class="legend-dot green-bg"></i>Legitimate users</span><span><i class="legend-dot purple-bg"></i>Rejected requests</span></div></article>
+        <article class="panel defense-card"><p class="eyebrow">DEFENSE IDEA</p><h2>Mitigation checklist</h2><ul><li><span>01</span>Rate limiting and request quotas</li><li><span>02</span>CDN, caching, and traffic scrubbing</li><li><span>03</span>Load balancing and autoscaling</li><li><span>04</span>Monitor latency, errors, and saturation</li></ul><p class="defense-note">Controls here change only the teaching model, not a real server.</p></article>
+      </section>
+      <footer><span>TRAFFICLAB <span class="accent">EDUCATIONAL EDITION</span></span><span>Local-first · No real attack traffic · Built for defensive learning</span></footer>
+    </main>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>
